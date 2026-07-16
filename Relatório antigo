@@ -1,0 +1,125 @@
+		$xml_relatorio = '<SearchReport>
+          <DisplayFields>
+            <DisplayField name="ID do Processo">20378</DisplayField>
+            <DisplayField name="Número do Cliente">17591</DisplayField>
+            <DisplayField name="Valor da Causa">20836</DisplayField>
+            <DisplayField name="Autor Principal">16107</DisplayField>
+            <DisplayField name="Número do processo CNJ">16072</DisplayField>
+            <DisplayField name="Objeto da Ação Principal">17714</DisplayField>
+            <DisplayField name="ID do Sistema - Peças Processuais">17681</DisplayField>
+            <DisplayField name="Documento">17684</DisplayField>
+            <DisplayField name="Tipo de Peça Processual">17685</DisplayField>
+            <DisplayField name="Anexo do Parecer Técnico">20554</DisplayField>
+            <DisplayField name="ID do Sistema - Subsídio">18156</DisplayField>
+          </DisplayFields>
+          <PageSize>10</PageSize>
+          <IsResultLimitPercent>False</IsResultLimitPercent>
+          <Criteria>
+            <Keywords />
+            <Filter>
+              <OperatorLogic />
+              <Conditions>
+                <ValueListFilterCondition>
+                  <Field name="Status do Processo">18580</Field>
+                  <Operator>Contains</Operator>
+                  <IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+                  <IncludeChildren>False</IncludeChildren>
+                  <Values>
+                    <Value name="EM ANDAMENTO">82604</Value>
+                    <Value name="PRÉ ARQUIVADO">82605</Value>
+                  </Values>
+                </ValueListFilterCondition>
+                <ValueListFilterCondition>
+                  <Field name="Nome do Cliente">22321</Field>
+                  <Operator>DoesNotContain</Operator>
+                  <IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+                  <IncludeChildren>False</IncludeChildren>
+                  <Values>
+                    <Value name="CONTENCIOSO">114751</Value>
+                    <Value name="YELUM">114750</Value>
+                  </Values>
+                </ValueListFilterCondition>
+                <ValueListFilterCondition>
+                  <Field name="Acordo Prévio foi realizado?">22905</Field>
+                  <Operator>DoesNotContain</Operator>
+                  <IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+                  <IncludeChildren>False</IncludeChildren>
+                  <Values>
+                    <Value name="SIM">117820</Value>
+                  </Values>
+                </ValueListFilterCondition>
+                <TextFilterCondition>
+                  <Field name="Número do Cliente">17591</Field>
+                  <Operator>DoesNotContain</Operator>
+                  <Value />
+                </TextFilterCondition>
+                <ValueListFilterCondition>
+                  <Field name="Nome do Cliente">22321</Field>
+                  <Operator>Contains</Operator>
+                  <IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+                  <IncludeChildren>False</IncludeChildren>
+                  <Values>
+                    <Value name="CVP">127971</Value>
+                  </Values>
+                </ValueListFilterCondition>
+                <ValueListFilterCondition>
+                  <Field name="Status do Processo">18580</Field>
+                  <Operator>Contains</Operator>
+                  <IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+                  <IncludeChildren>False</IncludeChildren>
+                  <Values>
+                    <Value name="EM ANDAMENTO">82604</Value>
+                  </Values>
+                </ValueListFilterCondition>
+                <ValueListFilterCondition>
+                  <Field name="Tipo de Peça Processual">17685</Field>
+                  <Operator>Contains</Operator>
+                  <IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+                  <IncludeChildren>False</IncludeChildren>
+                  <Values>
+                    <Value name="060 - PETIÇÃO INICIAL">69727</Value>
+                  </Values>
+                </ValueListFilterCondition>
+              </Conditions>
+            </Filter>
+            <ModuleCriteria>
+              <Module name="Processos">446</Module>
+              <IsKeywordModule>True</IsKeywordModule>
+              <BuildoutRelationship>Union</BuildoutRelationship>
+              <SortFields>
+                <SortField>
+                  <Field name="Estado">16068</Field>
+                  <SortType>Ascending</SortType>
+                </SortField>
+                <SortField>
+                  <Field name="Data do Arquivamento em Juízo">18578</Field>
+                  <SortType>Ascending</SortType>
+                </SortField>
+              </SortFields>
+              <Children>
+                <ModuleCriteria>
+                  <Module name="Peças Processuais">459</Module>
+                  <IsKeywordModule>False</IsKeywordModule>
+                  <BuildoutRelationship>Intersection</BuildoutRelationship>
+                  <SortFields>
+                    <SortField>
+                      <Field name="ID do Sistema - Peças Processuais">17681</Field>
+                      <SortType>Ascending</SortType>
+                    </SortField>
+                  </SortFields>
+                </ModuleCriteria>
+                <ModuleCriteria>
+                  <Module name="Subsídio">455</Module>
+                  <IsKeywordModule>False</IsKeywordModule>
+                  <BuildoutRelationship>Intersection</BuildoutRelationship>
+                  <SortFields>
+                    <SortField>
+                      <Field name="ID do Sistema - Subsídio">18156</Field>
+                      <SortType>Ascending</SortType>
+                    </SortField>
+                  </SortFields>
+                </ModuleCriteria>
+              </Children>
+            </ModuleCriteria>
+          </Criteria>
+        </SearchReport>';
