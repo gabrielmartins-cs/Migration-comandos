@@ -1,4 +1,4 @@
-php artisan make:migration rename_telefone_to_celular_in_clientes_table --table=clientes
+php artisan make:migration rename_teses_formatadas_alterar_nome_coluna_ --table=teses_formatadas
 
 
 use Illuminate\Database\Migrations\Migration;
@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            // Sintaxe: $table->renameColumn('nome_antigo', 'nome_novo');
+            // Sintaxe: $table->renameColumn('field_id', 'nome_novo');
             $table->renameColumn('telefone', 'celular');
         });
     }
@@ -24,7 +24,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('clientes', function (Blueprint $table) {
-            // Caminho inverso para o rollback
             $table->renameColumn('celular', 'telefone');
         });
     }
