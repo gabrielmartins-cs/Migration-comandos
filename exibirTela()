@@ -1,0 +1,28 @@
+
+	// PRIMEIRA COISA QUE É EXIBIDA NA TELA
+	public function exibirTela(Request $request)
+	{
+
+		$leituracampos = $this->DadosdoProcesso();
+
+		$msgErro = 'ERRO: Falta dado';
+
+		$resultado = array_map(function ($item) use ($msgErro) {
+			// Retorna apenas os campos desejados com as chaves mantidas ou tratadas
+			return [
+				"20378||"               => $item["20378||"] ?? $msgErro,
+				"17591||"               => $item["17591||"] ?? $msgErro,
+				"20836||"               => $item["20836||"] ?? 0, // Mantive 0 para o valor da causa não quebrar a formatação de moeda na Blade
+				"16107||"               => $item["16107||"] ?? $msgErro,
+				"17714|| @displayName"  => $item["17714|| @displayName"] ?? $msgErro,
+				"17681||"               => $item["17681||"] ?? $msgErro,
+				"17684||"               => $item["17684||"] ?? $msgErro,
+				"17684||nome"           => $item["17684||nome"] ?? $msgErro,
+				"20554||"               => $item["20554||"] ?? $msgErro,
+				"20554||nome"           => $item["20554||nome"] ?? $msgErro,
+				"18156||"               => $item["18156||"] ?? $msgErro
+			];
+		}, $leituracampos);
+
+		return view('dossie.default', compact('resultado'));
+	}
