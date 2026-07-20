@@ -1,0 +1,619 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\TeseFormatada;
+use App\Classes\ArcherSOAP;
+use App\Classes\ArcherRest;
+use App\Models\PalavrasTeses;
+use App\Http\Controllers\WordxDossieController;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+
+
+
+
+
+class DossieController extends Controller
+{
+
+	//CAPTURAR DADOS DO ARCHER
+	private function DadosdoProcesso($paginaAtual, $porPagina)
+	{
+		$obArcherSOAP = new ArcherSOAP();
+		$xml_relatorio = '<SearchReport>
+			<DisplayFields>
+							<DisplayField name="ID do Processo">20378</DisplayField>
+							<DisplayField name="Número do Cliente">17591</DisplayField>
+							<DisplayField name="Valor da Causa">20836</DisplayField>
+							<DisplayField name="Autor Principal">16107</DisplayField>
+							<DisplayField name="Número do processo CNJ">16072</DisplayField>
+							<DisplayField name="Objeto da Ação Principal">17714</DisplayField>
+							<DisplayField name="Anexar Subsídios / Averbação">18892</DisplayField>
+							<DisplayField name="ID do Sistema - Peças Processuais">17681</DisplayField>
+							<DisplayField name="Documento">17684</DisplayField>
+							<DisplayField name="Tipo de Peça Processual">17685</DisplayField>
+							<DisplayField name="Anexo do Parecer Técnico">20554</DisplayField>
+							<DisplayField name="ID do Sistema - Subsídio">18156</DisplayField>
+							<DisplayField name="Fato Gerador.">22432</DisplayField>
+						</DisplayFields>
+						<PageSize>' . $porPagina . '</PageSize>
+						<IsResultLimitPercent>False</IsResultLimitPercent>
+						<Criteria>
+					<Keywords />
+					<Filter>
+					<OperatorLogic />
+					<Conditions>
+						<ValueListFilterCondition>
+						<Field name="Status do Processo">18580</Field>
+						<Operator>Contains</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="EM ANDAMENTO">82604</Value>
+							<Value name="PRÉ ARQUIVADO">82605</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Nome do Cliente">22321</Field>
+						<Operator>DoesNotContain</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="CONTENCIOSO">114751</Value>
+							<Value name="YELUM">114750</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Acordo Prévio foi realizado?">22905</Field>
+						<Operator>DoesNotContain</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="SIM">117820</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<TextFilterCondition>
+						<Field name="Número do Cliente">17591</Field>
+						<Operator>DoesNotContain</Operator>
+						<Value />
+						</TextFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Nome do Cliente">22321</Field>
+						<Operator>Contains</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="CVP">127971</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Status do Processo">18580</Field>
+						<Operator>Contains</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="EM ANDAMENTO">82604</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Tipo de Peça Processual">17685</Field>
+						<Operator>Contains</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="060 - PETIÇÃO INICIAL">69727</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Fato Gerador.">22432</Field>
+						<Operator>Contains</Operator>
+						<IsNoSelectionIncluded>False</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="VENDA POR OPORTUNIDADE">115592</Value>
+						</Values>
+						</ValueListFilterCondition>
+						<ValueListFilterCondition>
+						<Field name="Subsidio Completo?">18899</Field>
+						<Operator>Contains</Operator>
+						<IsNoSelectionIncluded>True</IsNoSelectionIncluded>
+						<IncludeChildren>False</IncludeChildren>
+						<Values>
+							<Value name="NÃO">83127</Value>
+						</Values>
+						</ValueListFilterCondition>
+					</Conditions>
+					</Filter>
+					<ModuleCriteria>
+					<Module name="Processos">446</Module>
+					<IsKeywordModule>True</IsKeywordModule>
+					<BuildoutRelationship>Union</BuildoutRelationship>
+					<SortFields>
+						<SortField>
+						<Field name="Estado">16068</Field>
+						<SortType>Ascending</SortType>
+						</SortField>
+						<SortField>
+						<Field name="Data do Arquivamento em Juízo">18578</Field>
+						<SortType>Ascending</SortType>
+						</SortField>
+					</SortFields>
+					<Children>
+						<ModuleCriteria>
+						<Module name="Peças Processuais">459</Module>
+						<IsKeywordModule>False</IsKeywordModule>
+						<BuildoutRelationship>Intersection</BuildoutRelationship>
+						<SortFields>
+							<SortField>
+							<Field name="ID do Sistema - Peças Processuais">17681</Field>
+							<SortType>Ascending</SortType>
+							</SortField>
+						</SortFields>
+						</ModuleCriteria>
+						<ModuleCriteria>
+						<Module name="Subsídio">455</Module>
+						<IsKeywordModule>False</IsKeywordModule>
+						<BuildoutRelationship>Intersection</BuildoutRelationship>
+						<SortFields>
+							<SortField>
+							<Field name="Fato Gerador">19061</Field>
+							<SortType>Ascending</SortType>
+							</SortField>
+						</SortFields>
+						</ModuleCriteria>
+					</Children>
+					</ModuleCriteria>
+				</Criteria>
+		</SearchReport>';
+
+		//MapeamentoSentencasController.php usar exemplo, data, paginação.
+
+		//  $stBancoAmbiente = env('DB_DATABASE');
+		//  $xml_rel_mapeamento = $stBancoAmbiente == 'dev_integra' ? $obArcherSOAP->get_relatorio_paginado($xml_relatorio, $paginaAtual) : $obArcherSOAP->get_relatorio_completo($xml_relatorio);
+		// //  $arDados = $obArcherSOAP->extrair_dados_relatorio3($xml_rel_mapeamento);
+		//  return $arDados;
+
+		$retornoArcher = $obArcherSOAP->get_relatorio_paginado($xml_relatorio, $paginaAtual);
+
+		$arDados = $obArcherSOAP->extrair_dados_relatorio3($retornoArcher['xml']);
+
+		Cache::put('processos_usuario_' . auth()->id(), collect($arDados)->keyBy('20378||'), 3600);
+		
+		return [
+			'dados' => $arDados,
+			'total' => $retornoArcher['total']
+		];
+	}
+
+	// PRIMEIRA COISA QUE É EXIBIDA NA TELA
+	// Não esqueça de importar a classe no topo do seu Controller:
+	// use Illuminate\Pagination\LengthAwarePaginator;
+
+	public function exibirTela(Request $request)
+	{
+		$porPagina = 25;
+		$paginaAtual = (int) $request->get('page', 1);
+
+		$retorno = $this->DadosdoProcesso($paginaAtual, $porPagina);
+
+		$leituracampos = $retorno['dados'];
+		$totalRegistros = $retorno['total'];
+
+		$msgErro = 'ERRO: Falta dado';
+
+		$dadosTratados = array_map(function ($item) use ($msgErro) {
+			return [
+				"20378||"               => $item["20378||"] ?? $msgErro,
+				"17591||"               => $item["17591||"] ?? $msgErro,
+				"20836||"               => $item["20836||"] ?? 0,
+				"16107||"               => $item["16107||"] ?? $msgErro,
+				"17714|| @displayName"  => $item["17714|| @displayName"] ?? $msgErro,
+				"17681||"               => $item["17681||"] ?? $msgErro,
+				"17684||"               => $item["17684||"] ?? $msgErro,
+				"17684||nome"           => $item["17684||nome"] ?? $msgErro,
+				"20554||"               => $item["20554||"] ?? $msgErro,
+				"20554||nome"           => $item["20554||nome"] ?? $msgErro,
+				"18156||"               => $item["18156||"] ?? $msgErro
+			];
+		}, $leituracampos);
+
+		$resultado = new LengthAwarePaginator(
+			$dadosTratados,
+			$totalRegistros,
+			$porPagina,
+			$paginaAtual,
+			[
+				'path' => $request->url(),
+				'query' => $request->query()
+			]
+		);
+
+		return view('dossie.default', compact('resultado'));
+	}
+
+
+
+	//BOTÃO GERAR DOSSIÊ DA TELA
+	public function btnGerarDossie(Request $request)
+	{
+
+
+		//objetos criados ao longo deste código;
+		$bancoteste = new TeseFormatada();
+		$obArcherRest = new ArcherRest();
+		$CriarWordxDossie = new WordxDossieController();
+
+		//tempo definido tendo em vista que aguardar mais que 60s extoura; 
+		set_time_limit(180);
+
+		//1) PEGA OS DADOS PROCESSADOS PELO RELATÓRIO
+		$jsonBruto = $request->input('processo_dados');
+		$dadosDoProcesso = json_encode($jsonBruto) ? json_decode($jsonBruto, true) : [];
+		$idPdf = $dadosDoProcesso['17684||'] ?? null;
+		$idDocx = $dadosDoProcesso['20554||'] ?? null;
+		$idDoSubsidio = $dadosDoProcesso['18156||'] ?? null;
+		//A variavel $idDoSubsidio é usada também como nome da pasta;
+
+		//2) USA A API DO LAZARO PARA EXTRAIR O TEXTO E PEGAR AS TESES
+		$textoPeticaoInicial = $this->extrair_texto($idPdf);
+		$extrairTeses = $this->analisarTeses($textoPeticaoInicial);
+
+		//3) PEGA O NUMERO DAS TESES E BUSCA NO BANCO O TEXTO
+		$teseslistabanco = $bancoteste->numeroTesesBanco($extrairTeses);
+
+		//3.1) SINTESE FÁTICA (CAUSA DE PEDIR E OS PEDIDOS)
+		$sintesefatica = $this->sinteseFatica($textoPeticaoInicial);
+
+		//4) PEGA O ARQUIVO DO ARTÉRIA, EXTRAI, E CRIA O DOCX
+		$arquivodcx =  $this->getSubsidioCliente($idDocx, $idDoSubsidio);
+		$jsontextosubsidio =  $obArcherRest->extrairArquivo($arquivodcx, $idDoSubsidio);
+		$criararquivo = $CriarWordxDossie->criarWordx($idDocx, $jsontextosubsidio, $teseslistabanco, $jsonBruto, $idDoSubsidio, $sintesefatica);
+		//	dd($criararquivo);
+
+		//5) GRAVA O ARQUIVO NO AMBIENTE DE HOMOLOGAÇÃO
+		$caminho_limpo = str_replace('\\', '/', $criararquivo);
+		$nomearquivo = basename($caminho_limpo);
+		$partes = explode('automacao_dossie/' . $idDoSubsidio . '/', $caminho_limpo);
+		$caminho = 'automacao_dossie/' . $idDoSubsidio . '/' . end($partes); //retorna "automacao_dossie/7230542/dossie_1014873583.docx"
+		$uploadarquivo = $obArcherRest->addFile($nomearquivo, $caminho);
+		$obArcherRest->updateArquivoContrato($idDoSubsidio, 28403, $uploadarquivo);
+
+		//6) CRIA UM ARQUIVO DE LOG TXT NA MESMA PASTA
+		$this->gerenciarLogDossie("");
+
+		//7) APAGA TODO O CONTEÚDO DA PASTA /automacao_dossie
+		$this->limparPastaDossieCompleto($caminho);
+
+		//8) RETORNAR OS DADOS PARA A BLADE /dossie/gerar
+		return view('dossie.dossie', [
+			'mensagem' => "Id Criado em " . $idDoSubsidio
+		]);
+	}
+
+	//ANALISAR TESES
+	public function analisarTeses($texto)
+	{
+
+		$MapeamentoTeses = new PalavrasTeses(); // model do banco 
+		$textoMinusculo = mb_strtolower($texto, 'UTF-8');
+
+		$mapeamentoTeses = $MapeamentoTeses->dbMapeamentoteses();
+
+		$resultado = [];
+		foreach ($mapeamentoTeses as $tese) {
+			$encontrou = false;
+			$termos = json_decode($tese->termos, true);
+			if (is_array($termos)) {
+				foreach ($termos as $palavra) {
+					if (str_contains($textoMinusculo, mb_strtolower($palavra, 'UTF-8'))) {
+						$encontrou = true;
+						break;
+					}
+				}
+			}
+
+			$resultado[$tese->nome] = [
+				'status' => $encontrou,
+				'field_id' => $tese->field_id
+			];
+		}
+
+		// ========================================================================
+		// 2. REGRAS ESPECIAIS (Lógica "E" e Anulações)
+		// ========================================================================
+
+		// REGRA PARA A TESE 38: Incompetência da Justiça Federal
+		$enderecadoJusticaFederal = str_contains($textoMinusculo, 'justiça federal') ||
+			str_contains($textoMinusculo, 'juiz federal') ||
+			str_contains($textoMinusculo, 'vara federal');
+
+		$contraSeguradoraPrivada = str_contains($textoMinusculo, 'caixa seguradora') ||
+			str_contains($textoMinusculo, 'caixa vida e previdência') ||
+			str_contains($textoMinusculo, 'caixa vida e previdencia') ||
+			str_contains($textoMinusculo, 'vida e previdência') ||
+			str_contains($textoMinusculo, 'direito privado');
+
+		$resultado['[TESE-38] - DA INCOMPETÊNCIA DA JUSTIÇA FEDERAL PARA JULGAMENTO DO FEITO'] = [
+			'status' => ($enderecadoJusticaFederal && $contraSeguradoraPrivada),
+			'field_id' => '28350'
+		];
+
+		// REGRA DE CONFLITO: Se achou Venda Casada, anula a Repetição de Indébito
+		if (isset($resultado['[TESE-25] - INEXISTÊNCIA DE VENDA CASADA']) && $resultado['[TESE-25] - INEXISTÊNCIA DE VENDA CASADA']['status'] === true) {
+			if (isset($resultado['[TESE-39] - DA REPETIÇÃO DO INDÉBITO'])) {
+				$resultado['[TESE-39] - DA REPETIÇÃO DO INDÉBITO']['status'] = false;
+			}
+		}
+
+		// REGRA PARA A TESE 27: Ingresso Espontâneo
+		$assuntoSeguro = str_contains($textoMinusculo, 'seguro prestamista') ||
+			str_contains($textoMinusculo, 'seguro de vida') ||
+			str_contains($textoMinusculo, 'previdência') ||
+			str_contains($textoMinusculo, 'previdencia');
+
+		$empresaPoloPassivoErrada = str_contains($textoMinusculo, 'caixa seguradora') ||
+			str_contains($textoMinusculo, 'caixa econômica') ||
+			str_contains($textoMinusculo, 'caixa economica') ||
+			str_contains($textoMinusculo, 'cef') ||
+			str_contains($textoMinusculo, 'xs2') ||
+			str_contains($textoMinusculo, 'banco caixa') ||
+			str_contains($textoMinusculo, '02.860.003/0001-51'); // CNPJ Caixa Seguradora
+
+		$empresaPoloPassivoCerta = str_contains($textoMinusculo, 'caixa vida previdência') ||
+			str_contains($textoMinusculo, 'caixa vida previdencia') ||
+			str_contains($textoMinusculo, 'caixa vida e previdência') ||
+			str_contains($textoMinusculo, 'caixa vida e previdencia') ||
+			str_contains($textoMinusculo, '03.730.204/0001'); // Início do CNPJ da Caixa Vida
+
+		// A tese só ativa se achou a Errada e NÃO (!) achou a Certa
+		$resultado['[TESE-27] - PRELIMINAR DE INGRESSO ESPONTÂNEO'] = [
+			'status' => ($assuntoSeguro && $empresaPoloPassivoErrada && !$empresaPoloPassivoCerta),
+			'field_id' => '28340'
+		];
+
+		// REGRA PARA A TESE 20: Ilegitimidade Passiva para Recálculo
+		$contraQualquerSeguradora = str_contains($textoMinusculo, 'caixa seguradora') ||
+			str_contains($textoMinusculo, 'caixa vida e previdência') ||
+			str_contains($textoMinusculo, 'caixa vida e previdencia') ||
+			str_contains($textoMinusculo, 'vida e previdência') ||
+			str_contains($textoMinusculo, '03.730.204/0001');
+
+		$pedeRevisaoEmprestimo = str_contains($textoMinusculo, 'recálculo') ||
+			str_contains($textoMinusculo, 'revisão de parcelas') ||
+			str_contains($textoMinusculo, 'saldo devedor') ||
+			str_contains($textoMinusculo, 'juros abusivos') ||
+			str_contains($textoMinusculo, 'revisão do contrato de empréstimo');
+
+		$resultado['[TESE-20] - ILEGITIMIDADE PASSIVA DA CAIXA VIDA E PREVIDÊNCIA QUANTO AO PEDIDO DE RECÁLCULO'] = [
+			'status' => ($contraQualquerSeguradora && $pedeRevisaoEmprestimo),
+			'field_id' => '28333'
+		];
+
+		// ========================================================================
+		// 3. CONVERSÃO E RETORNO DOS DADOS
+		// ========================================================================
+		$tesesAtivas = [];
+
+		foreach ($resultado as $chaveTese => $dadosTese) {
+			if (isset($dadosTese['status']) && $dadosTese['status'] === true) {
+				if (preg_match('/\[TESE-(\d+)\]/', $chaveTese, $matches)) {
+					// O (int) já garante que o valor seja salvo como um número inteiro puro
+					$tesesAtivas[] = (int)$matches[1];
+				}
+			}
+		}
+
+		return $tesesAtivas;
+	}
+
+	//BAIXAR O ARQUIVO BASE64
+	private function getSubsidioCliente($Idarquivo, $nomeDaPasta)
+	{
+		$docsub = new ArcherRest;
+		$respostaApi = $docsub->getPecaProd($Idarquivo);
+
+		if (!is_array($respostaApi) || !isset($respostaApi['AttachmentBytes'])) {
+			return ['erro' => $respostaApi];
+		}
+
+		$base64Data = $respostaApi['AttachmentBytes'];
+
+		$conteudoBinario = base64_decode($base64Data);
+
+		//anteriormente só apagava, agora verifica se já existe, e se existir apaga
+		// $diretorio = 'uploads/' . $nomeDaPasta . '/';
+
+		// if (!is_dir($diretorio)) {
+		//   mkdir($diretorio, 0755, true);
+		// }
+
+
+		$diretorio = 'automacao_dossie/' . $nomeDaPasta . '/';
+		function apagarDiretorio($dir)
+		{
+			if (!is_dir($dir)) {
+				return false;
+			}
+			// array_diff é a interseção
+			$arquivos = array_diff(scandir($dir), array('.', '..'));
+
+			foreach ($arquivos as $arquivo) {
+				$caminho = "$dir/$arquivo";
+				is_dir($caminho) ? apagarDiretorio($caminho) : unlink($caminho);
+			}
+			return rmdir($dir);
+		}
+
+		if (is_dir($diretorio)) {
+			apagarDiretorio($diretorio);
+		}
+
+		mkdir($diretorio, 0755, true);
+		$nomeArquivo = 'subsidio' . rand(10000, 99999) . '.docx';
+		$caminhoCompleto = $diretorio . $nomeArquivo;
+
+		$sucesso = file_put_contents($caminhoCompleto, $conteudoBinario);
+
+		if ($sucesso !== false) {
+			return [
+				'sucesso' => true,
+				'mensagem' => 'Arquivo salvo com sucesso!',
+				'nome_arquivo' => $nomeArquivo,
+				'caminho' => $caminhoCompleto,
+				'pasta' => $nomeDaPasta
+			];
+
+			return $mensagem;
+
+			dd($sucesso);
+		} else {
+			return [
+				'erro' => 'Não foi possível salvar o arquivo no servidor. Verifique as permissões da pasta.'
+			];
+		}
+	}
+
+	//OCR DO LAZARO
+	function extrair_texto($idArquivo)
+	{
+		try {
+			$url = 'http://172.32.1.229:9000/extract_text';
+			$response = \Http::withHeaders([
+				'Content-Type' => 'application/json',
+				'api-key' => '8cb99ca8-9e55-11ed-a8fc-0242ac120002'
+			])->post($url, [
+				'id' => [$idArquivo]
+			]);
+			return $response->body();
+		} catch (\Exception $e) {
+			throw new \Exception("Erro ao conectar na API: " . $e->getMessage());
+		}
+	}
+
+
+	function sinteseFatica($textoOriginal)
+	{
+		$textoSemAcento = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $textoOriginal);
+		$texto = strtolower($textoSemAcento);
+		$empresasEncontradas = [];
+		$dicionarioRe = [
+			'Caixa Vida e Previdência S/A' => ['caixa vida', 'cvp'],
+			'Caixa Seguradora S/A' => ['caixa seguradora', 'csh'],
+			'Caixa Econômica Federal' => ['caixa economica', 'cef']
+		];
+
+		foreach ($dicionarioRe as $nomeFormatado => $palavras) {
+			foreach ($palavras as $palavra) {
+				if (strpos($texto, $palavra) !== false) {
+					$empresasEncontradas[] = $nomeFormatado;
+					break;
+				}
+			}
+		}
+		$nome_empresa = !empty($empresasEncontradas) ? implode(', ', $empresasEncontradas) : null;
+		$alegacao = null;
+		$dicionarioCausa = [
+			'Descontos indevidos' => ['cobranca indevida', 'desconto indevido', 'debitos duplicados', 'valores cobrados indevidamente'],
+			'Negativa de pagamento de seguro' => ['negou o requerimento de sinistro', 'nao pagamento do seguro', 'nao foi lhe conferido tal direito', 'recusa no pagamento'],
+			'Fraude bancária / Empréstimo não contratado' => ['emprestimo nao contratado', 'fraude', 'desconhece a contratacao']
+		];
+
+		foreach ($dicionarioCausa as $causaFormatada => $palavras) {
+			foreach ($palavras as $palavra) {
+				if (strpos($texto, $palavra) !== false) {
+					$alegacao = $causaFormatada;
+					break 2;
+				}
+			}
+		}
+		$pedidosEncontrados = [];
+		$dicionarioPedidos = [
+			'devolução dos valores pagos' => ['ressarcimento', 'devolucao das parcelas', 'dano material', 'devolucao integral', 'repeticao do indebito'],
+			'danos morais' => ['danos morais', 'dano moral'],
+			'pagamento da apólice do seguro' => ['pagamento do capital do seguro', 'pagamento da indenizacao', 'pagamento do seguro'],
+			'cancelamento do contrato' => ['cancelamento do seguro', 'cancelamento do contrato', 'declaracao de inexistencia']
+		];
+
+		foreach ($dicionarioPedidos as $pedidoFormatado => $palavras) {
+			foreach ($palavras as $palavra) {
+				if (strpos($texto, $palavra) !== false) {
+					$pedidosEncontrados[] = $pedidoFormatado;
+					break;
+				}
+			}
+		}
+		return [
+			'empresa'  => $nome_empresa,
+			'alegacao' => $alegacao,
+			'pedido_1' => $pedidosEncontrados[0] ?? null,
+			'pedido_2' => $pedidosEncontrados[1] ?? null
+		];
+	}
+
+
+	function gerenciarLogDossie($conteudoLog)
+	{
+		$diretorio = dirname(__DIR__, 3) . '/public/automacao_dossie';
+		if (!is_dir($diretorio) && !mkdir($diretorio, 0777, true)) {
+			die("ERRO FATAL: Sem permissão para criar a pasta: {$diretorio}");
+		}
+		clearstatcache();
+
+		//logica para ordenar do mais velho pro mais novo
+		$arquivos = glob($diretorio . '/log_dossie_*.log') ?: []; //glob vê os arquivos de $diretorio ordena em um array
+		usort($arquivos, function ($a, $b) {
+			return filemtime($a) <=> filemtime($b); //spaceship operador <=> vai reordenando os item do array o php devolve em um formato timestamp
+		});
+
+		$arquivoMaisNovo = end($arquivos);
+		$limiteTamanho = 5 * 1024 * 1024; // 5 MB
+
+		if ($arquivoMaisNovo && filesize($arquivoMaisNovo) < $limiteTamanho) {
+			$arquivoAlvo = $arquivoMaisNovo;
+		} else {
+			$arquivoAlvo = $diretorio . '/log_dossie_' . date('d-m-Y_H\H_i_s') . '.log';
+			$arquivos[] = $arquivoAlvo; // Adiciona o novo arquivo no final da lista (sendo este o mais novo)!!!
+		}
+
+		@file_put_contents($arquivoAlvo, $conteudoLog . PHP_EOL, FILE_APPEND); //@' oculta warnings de permissão
+
+		while (count($arquivos) > 5) {
+			$arquivoParaDeletar = array_shift($arquivos);
+			@unlink($arquivoParaDeletar);
+		}
+	}
+
+
+	function limparPastaDossieCompleto($caminhoCompleto)
+	{
+		$pasta = dirname($caminhoCompleto);
+		$arquivoParaManter = basename($caminhoCompleto);
+		if (!is_dir($pasta)) {
+			return false;
+		}
+		$itens = scandir($pasta);
+
+		// dd($itens);
+
+		//. é esse diretorio e .. é o diretorio pai
+		foreach ($itens as $item) {
+			if ($item === '.' || $item === '..' || $item === $arquivoParaManter) {
+				continue;
+			}
+
+			//retorna assim: array:22 [0 => "." 1 => ".." 2 => "doc_17511_image7.png" 3 => "doc_29495_image4.png" 4 => "doc_46614_image8.png" 5 => "doc_47393_image14.png"....
+
+			$caminhoItem = $pasta . '/' . $item;
+			if (is_file($caminhoItem)) {
+				unlink($caminhoItem);
+			} elseif (is_dir($caminhoItem)) {
+				@rmdir($caminhoItem);
+			}
+		}
+
+		return true;
+	}
+}
