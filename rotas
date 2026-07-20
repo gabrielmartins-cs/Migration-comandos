@@ -1,0 +1,23 @@
+Route::middleware(['auth:sanctum', 'verified'])
+    ->get('/dossie', [DossieController::class, 'exibirTela'])
+    ->name('exibir.tela');
+
+Route::middleware(['auth:sanctum', 'verified'])->any('/dossie/gerar', [DossieController::class, 'btnGerarDossie'])->name('dossie.gerar');
+
+
+Route::middleware(['auth:sanctum', 'verified'])->get('/editarTeses', [PalavrasTesesController::class, 'editar_teses'])->name('editar_teses');
+
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::resource('palavras-teses', PalavrasTesesController::class)->only(['index', 'store', 'update', 'destroy']);
+});
+
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    // Rota Resource que já tínhamos (Palavras Teses)
+    Route::resource('teses', PalavrasTesesController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // NOVAS ROTAS (Textos das Teses)
+    Route::get('/textos-teses', [PalavrasTesesController::class, 'indexTextos'])->name('textos.index');
+    Route::post('/textos-teses', [PalavrasTesesController::class, 'storeTextos'])->name('textos.store');
+    Route::put('/textos-teses/{id}', [PalavrasTesesController::class, 'updateTextos'])->name('textos.update');
+    Route::delete('/textos-teses/{id}', [PalavrasTesesController::class, 'destroyTextos'])->name('textos.destroy');
+});
