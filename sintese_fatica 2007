@@ -1,0 +1,58 @@
+function sinteseFatica($textoOriginal)
+	{
+		$textoSemAcento = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $textoOriginal);
+		$texto = strtolower($textoSemAcento);
+		$empresasEncontradas = [];
+		$dicionarioRe = [
+			'Caixa Vida e Previdência S/A' => ['caixa vida', 'cvp'],
+			'Caixa Seguradora S/A' => ['caixa seguradora', 'csh'],
+			'Caixa Econômica Federal' => ['caixa economica', 'cef']
+		];
+
+		foreach ($dicionarioRe as $nomeFormatado => $palavras) {
+			foreach ($palavras as $palavra) {
+				if (strpos($texto, $palavra) !== false) {
+					$empresasEncontradas[] = $nomeFormatado;
+					break;
+				}
+			}
+		}
+		$nome_empresa = !empty($empresasEncontradas) ? implode(', ', $empresasEncontradas) : null;
+		$alegacao = null;
+		$dicionarioCausa = [
+			'Descontos indevidos' => ['cobranca indevida', 'desconto indevido', 'debitos duplicados', 'valores cobrados indevidamente'],
+			'Negativa de pagamento de seguro' => ['negou o requerimento de sinistro', 'nao pagamento do seguro', 'nao foi lhe conferido tal direito', 'recusa no pagamento'],
+			'Fraude bancária / Empréstimo não contratado' => ['emprestimo nao contratado', 'fraude', 'desconhece a contratacao']
+		];
+
+		foreach ($dicionarioCausa as $causaFormatada => $palavras) {
+			foreach ($palavras as $palavra) {
+				if (strpos($texto, $palavra) !== false) {
+					$alegacao = $causaFormatada;
+					break 2;
+				}
+			}
+		}
+		$pedidosEncontrados = [];
+		$dicionarioPedidos = [
+			'devolução dos valores pagos' => ['ressarcimento', 'devolucao das parcelas', 'dano material', 'devolucao integral', 'repeticao do indebito'],
+			'danos morais' => ['danos morais', 'dano moral'],
+			'pagamento da apólice do seguro' => ['pagamento do capital do seguro', 'pagamento da indenizacao', 'pagamento do seguro'],
+			'cancelamento do contrato' => ['cancelamento do seguro', 'cancelamento do contrato', 'declaracao de inexistencia']
+		];
+
+		foreach ($dicionarioPedidos as $pedidoFormatado => $palavras) {
+			foreach ($palavras as $palavra) {
+				if (strpos($texto, $palavra) !== false) {
+					$pedidosEncontrados[] = $pedidoFormatado;
+					break;
+				}
+			}
+		}
+		return [
+			'empresa'  => $nome_empresa,
+			'alegacao' => $alegacao,
+			'pedido_1' => $pedidosEncontrados[0] ?? null,
+			'pedido_2' => $pedidosEncontrados[1] ?? null
+		];
+	}
