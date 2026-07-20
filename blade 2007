@@ -1,0 +1,173 @@
+@extends('layout.layout')
+
+@section("content")
+@include('layout.header', ['title' => 'Automação Dossiê ','subtitle' => '' ])
+
+<!-- default.blade.php -->
+
+{{-- Estrutura de layout mestre do AdminLTE --}}
+
+<div class="container-fluid">
+    <div class="card card-outline card-primary shadow">
+
+
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-table mr-1"></i> Planilha de Dados Processuais</h3>
+            <div class="card-tools">
+
+                {{-- BOTÃO EDITAR TESES E EDITAR PALAVRAS TESES --}}
+                <a href="{{ route('palavras-teses.index') }}" class="btn btn-sm btn-success mr-2 shadow-sm">
+                    <i class="fas fa-edit mr-1"></i> Editar palavras</a>
+
+                <a href="{{ route('textos.index') }}" class="btn btn-sm btn-success mr-2 shadow-sm">
+                    <i class="fas fa-edit mr-1"></i> Editar Textos Teses
+                </a>
+
+                <!-- <button type="button" class="btn btn-sm btn-success mr-2 shadow-sm">
+                    <i class="fas fa-plus mr-1"></i> Novo Botão
+                </button> -->
+
+                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Minimizar">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </div>
+
+
+
+        <div class="card-body p-0">
+            <div class="table-responsive p-3">
+                <table id="tabela-processos" class="table table-bordered table-striped table-hover dataTable dtr-inline">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>NÚMERO CNJ</th>
+                            <th>SCPJUD</th>
+                            <th>VALOR DA CAUSA</th>
+                            <th>NOME DO AUTOR</th>
+                            <th>OBJETO DA AÇÃO PRINCIPAL</th>
+                            <th>ID DO SUBSIDIO</th>
+                            <th>ARQUIVO INICIAL (ID)</th>
+                            <th>DOCX CLIENTE (ID)</th>
+                            <th class="text-center">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($resultado as $index => $item)
+                        <tr>
+                            <td class="font-weight-bold text-secondary">{{ $item['20378||'] ?? '' }}</td>
+
+                            <td>
+                                @if(isset($item['17591||']) && $item['17591||'] !== 'ERRO: Falta dado')
+                                <span class="badge badge-info">{{ $item['17591||'] }}</span>
+                                @else
+                                <span class="text-danger font-italic"><small>{{ $item['17591||'] ?? 'N/A' }}</small></span>
+                                @endif
+                            </td>
+
+                            <td class="text-nowrap">R$ {{ isset($item['20836||']) ? number_format((float)$item['20836||'], 2, ',', '.') : '0,00' }}</td>
+
+                            <td>{{ $item['16107||'] ?? '' }}</td>
+
+                            <td>{{ $item['17714|| @displayName'] ?? '' }}</td>
+
+                            <td><code>{{ $item['18156||'] ?? '' }}</code></td>
+
+                            <td>
+                                @if(isset($item['17684||']) && $item['17684||'] !== 'ERRO: Falta dado')
+                                <a href="https://arteria.costaesilvaadv.com.br/RSAarcher/Shared/RepositoryFileServer.ashx?fileId={{ $item['17684||'] }}&Type=Attachment"
+                                    target="_blank"
+                                    class="text-truncate d-inline-block font-weight-bold"
+                                    style="max-width: 180px;"
+                                    title="{{ $item['17684||nome'] ?? 'Arquivo' }}">
+                                    <i class="far fa-file-pdf text-danger mr-1"></i> {{ $item['17684||nome'] ?? 'PDF' }}
+                                </a>
+                                <small class="text-muted d-block">ID: {{ $item['17684||'] }}</small>
+                                @else
+                                <span class="text-danger"><i class="fas fa-exclamation-circle mr-1"></i> {{ $item['17684||'] ?? 'N/A' }}</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                @if(isset($item['20554||']) && $item['20554||'] !== 'ERRO: Falta dado')
+                                <a href="https://arteria.costaesilvaadv.com.br/RSAarcher/Shared/RepositoryFileServer.ashx?fileId={{ $item['20554||'] }}&Type=Attachment"
+                                    target="_blank"
+                                    class="text-truncate d-inline-block font-weight-bold"
+                                    style="max-width: 180px;"
+                                    title="{{ $item['20554||nome'] ?? 'Arquivo' }}">
+                                    <i class="far fa-file-word text-primary mr-1"></i> {{ $item['20554||nome'] ?? 'DOCX' }}
+                                </a>
+                                <small class="text-muted d-block">ID: {{ $item['20554||'] }}</small>
+                                @else
+                                <span class="text-danger"><i class="fas fa-exclamation-circle mr-1"></i> {{ $item['20554||'] ?? 'N/A' }}</span>
+                                @endif
+                            </td>
+
+                            <td class="text-center align-middle">
+                                {{-- Formulário Nativo: Envia 100% dos campos que vieram da sua API/Banco para este processo --}}
+                                <form action="{{ route('dossie.gerar') }}" method="POST" style="margin: 0;">
+                                    @csrf
+                                    <input type="hidden" name="processo_dados" value="{{ json_encode($item) }}">
+                                    <button type="submit" class="btn btn-sm btn-success shadow-sm" title="Gerar Dossiê deste processo">
+                                        <i class="fas fa-cog mr-1"></i> Gerar Dossiê
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+        {{-- INÍCIO DO SEU PAGINADOR --}}
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center mt-3">
+
+            {{-- Texto de contagem à esquerda --}}
+            <div class="text-muted text-sm">
+                Exibindo de <strong>{{ $resultado->firstItem() ?? 0 }}</strong>
+                até <strong>{{ $resultado->lastItem() ?? 0 }}</strong>
+                de <strong>{{ $resultado->total() }}</strong> registros
+            </div>
+
+            {{-- Botões à direita --}}
+            <div class="m-0 pagination-sm">
+                {{ $resultado->appends(request()->query())->links('pagination::bootstrap-4') }}
+            </div>
+
+        </div>
+        {{-- FIM DO SEU PAGINADOR --}}
+
+
+
+
+    </div>
+</div>
+
+
+
+@endsection
+
+@section('js')
+<script>
+    $(document).ready(function() {
+        // Inicialização padrão e limpa do DataTables. Sem lógicas de captura DOM.
+        $('#tabela-processos').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+            }
+        });
+    });
+</script>
+@endsection
+
+@section("scripts")
+@endsection
